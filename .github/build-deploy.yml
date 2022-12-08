@@ -8,10 +8,76 @@ on:
     - main
 
 env:
+  DOTNET_CORE_VERSION: 7.0.x
+  PROJECT_PATH: demo-env.csproj
+  CONFIGURATION: Release
 
 jobs:
   build: 
     name: Build
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET Core SDK ${{ env.DOTNET_CORE_VERSION }}
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+    - name: Restore packages
+      run: dotnet restore "${{ env.PROJECT_PATH }}"
+    - name: Build app
+      run: dotnet build "${{ env.PROJECT_PATH }}" --configuration ${{ env.CONFIGURATION }} --no-restore
+    - name: Test app
+      run: dotnet test "${{ env.PROJECT_PATH }}" --no-build
+    - name: Publish app for deploy
+      run: dotnet publish "${{ env.PROJECT_PATH }}" --configuration ${{ env.CONFIGURATION }} --no-build
+
+  staging:
+    needs: build
+    name: Deploy to staging
+    environment:
+      name: staging
+    runs-on: ubuntu-latest
+    steps:
+    # download artifacts
+    - name: Download artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: webapp
+    
+    # actual deploy steps to staging environment
+  
+  deploy:
+    needs: staging
+    environment:
+      name: production
+    name: Deploy to production
+    runs-on: ubuntu-latest
+    steps:
+    # download artifacts
+    - name: Download artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: webapp
+      
+    # actual deploy steps to production environment
+   
+  
+ 
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+        
+      
     
